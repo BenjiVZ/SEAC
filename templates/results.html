@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome para el ícono -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+    <!-- html2canvas -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- jsPDF-AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.15/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- jsPDF y sus plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.15/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Bootstrap para estilos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados del Análisis - SEAC</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #564caf;
+            --secondary-color: #4a41a3;
+            --accent-color: #ff6b6b;
+            --text-color: #333;
+            --background-color: #f0f0f0;
+            --card-background: #ffffff;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* Estilos para las tabs */
+        .nav-tabs {
+            border-bottom: 2px solid var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--text-color);
+            border: none;
+            padding: 10px 20px;
+            margin-right: 5px;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Estilos para los filtros */
+        .filtros-container {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        .form-select {
+            border-radius: var(--border-radius);
+            border: 1px solid #ced4da;
+        }
+
+        /* Estilos para las tablas */
+        .table-responsive {
+            margin-top: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .table {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            padding: 15px;
+            text-align: center;
+            vertical-align: middle;
+            border: none;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .table td {
+            padding: 12px;
+            vertical-align: middle;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            padding: 20px 0;
+            box-shadow: var(--box-shadow);
+        }
+
+        header .logo {
+            max-width: 150px;
+            display: block;
+            margin: 0 auto 20px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: var(--accent-color);
+        }
+
+        /* Estilos para incumplimientos y excepciones */
+        .incumplimiento {
+            color: #dc3545;
+            font-weight: bold;
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+
+        .exception-cell {
+            background-color: #e2e3e5;
+            text-decoration: line-through;
+            color: #666;
+        }
+
+        /* Botones de acción */
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-exception {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-exception-apertura {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .btn-exception-cierre {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-apply {
+            background-color: #198754;
+            color: white;
+            margin-top: 5px;
+            width: 100%;
+        }
+
+        .btn-exception:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-exception:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Gráficos */
+        .graficos-container {
+            margin-bottom: 30px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .btn-exception {
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            border: 1px solid var(--primary-color);
+            background-color: white;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-exception:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-exception.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons-container {
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+        }
+
+        .no-registrado {
+            background-color: #cce5ff !important;
+            /* Azul claro */
+            color: #004085 !important;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .download-buttons {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .download-buttons .btn {
+            margin: 0 5px;
+            transition: transform 0.2s;
+        }
+
+        .download-buttons .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+        #btnDescargarPDF {
+            transition: all 0.3s ease;
+        }
+
+        #btnDescargarPDF:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="{{ url_for('index') }}" class="logo">
+                <!-- <img src="{{ url_for('static', filename='images/LOGO_SEAC-removebg.png') }}" alt="Logo SEAC"> -->
+            </a>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Inicio</a></li>
+                <li><a href="#">Configurar Horarios</a></li>
+                <li><a href="{{ url_for('proceso_completo') }}" class="active">Procesar Archivos</a></li>
+            </ul>
+        </nav>
+    </header><br>
+    <div class="container">
+        <h1>Resultados del Análisis</h1>
+
+        <!-- Tabs para cambiar entre vistas -->
+        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="analisis-tab" data-bs-toggle="tab" data-bs-target="#analisis"
+                    type="button" role="tab">
+                    Análisis
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="excepciones-tab" data-bs-toggle="tab" data-bs-target="#excepciones"
+                    type="button" role="tab">
+                    Análisis con Excepciones
+                </button>
+            </li>
+        </ul>
+
+        <!-- Contenido de los tabs -->
+        <div class="tab-content" id="myTabContent">
+            <!-- Tab Análisis Normal -->
+            <div class="tab-pane fade show active" id="analisis">
+                <!-- Gráficos originales -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div id="incumplimientos-total-chart"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="incumplimientos-tipo-chart"></div>
+                    </div>
+                </div>
+
+                <!-- Tabs secundarios para las tablas -->
+                <ul class="nav nav-tabs" id="tablasTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="completo-tab" data-bs-toggle="tab"
+                            data-bs-target="#completo" type="button" role="tab">
+                            Vista Completa
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="incumplimientos-tab" data-bs-toggle="tab"
+                            data-bs-target="#incumplimientos" type="button" role="tab">
+                            Incumplimientos
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="tablasTabContent">
+                    <!-- Tab Vista Completa -->
+                    <div class="tab-pane fade show active" id="completo">
+                        <div class="filtros-container mb-4">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">Local:</label>
+                                    <select class="form-select" id="filtro-local-completo">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Día:</label>
+                                    <select class="form-select" id="filtro-dia-completo">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table" id="tabla-completa">
+                                <thead>
+                                    <tr>
+                                        <th>N° de Local</th>
+                                        <th>Nombre</th>
+                                        <th>Día</th>
+                                        <th>Fecha</th>
+                                        <th>Apertura</th>
+                                        <th>Hora Límite Apertura</th>
+                                        <th>Cierre</th>
+                                        <th>Hora Límite Cierre</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in tabla %}
+                                    <tr>
+                                        <td>{{ row['N° de Local'] }}</td>
+                                        <td>{{ row.Nombre }}</td>
+                                        <td>{{ row.Día }}</td>
+                                        <td>{{ row.Fecha }}</td>
+                                        <td
+                                            class="{% if row.Incumplimiento_Apertura and not row.Es_Excepcion_Apertura %}incumplimiento{% elif row.No_Registrado_Apertura %}no-registrado{% elif row.Es_Excepcion_Apertura %}exception-cell{% endif %}">
+                                            {{ row.Apertura }}
+                                        </td>
+                                        <td>{{ row.Hora_Limite_Apertura }}</td>
+                                        <td
+                                            class="{% if row.Incumplimiento_Cierre and not row.Es_Excepcion_Cierre %}incumplimiento{% elif row.No_Registrado_Cierre %}no-registrado{% elif row.Es_Excepcion_Cierre %}exception-cell{% endif %}">
+                                            {{ row.Cierre }}
+                                        </td>
+                                        <td>{{ row.Hora_Limite_Cierre }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab Incumplimientos -->
+                    <div class="tab-pane fade" id="incumplimientos">
+                        <div class="filtros-container mb-4">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">Local:</label>
+                                    <select class="form-select" id="filtro-local-incumplimientos">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Día:</label>
+                                    <select class="form-select" id="filtro-dia-incumplimientos">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Tipo:</label>
+                                    <select class="form-select" id="filtro-tipo-incumplimientos">
+                                        <option value="">Todos</option>
+                                        <option value="apertura">Apertura</option>
+                                        <option value="cierre">Cierre</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons-container text-end mb-3">
+                            <button class="btn btn-primary" onclick="aplicarTodasExcepciones()">
+                                Aplicar Excepciones
+                            </button>
+                            <button id="btnDescargarPDF" class="btn btn-success ms-2" onclick="descargarTablaPDF()" style="display: none;">
+                                <i class="fas fa-file-pdf me-2"></i>Descargar PDF
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table" id="tabla-incumplimientos">
+                                <thead>
+                                    <tr>
+                                        <th>N° de Local</th>
+                                        <th>Nombre</th>
+                                        <th>Día</th>
+                                        <th>Fecha</th>
+                                        <th>Apertura</th>
+                                        <th>Hora Límite Apertura</th>
+                                        <th>Cierre</th>
+                                        <th>Hora Límite Cierre</th>
+                                        <th>Excepciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in tabla_incumplimientos %}
+                                    <tr data-local="{{ row['N° de Local'] }}" data-fecha="{{ row.Fecha }}">
+                                        <td>{{ row['N° de Local'] }}</td>
+                                        <td>{{ row.Nombre }}</td>
+                                        <td>{{ row.Día }}</td>
+                                        <td>{{ row.Fecha }}</td>
+                                        <td
+                                            class="{% if row.Incumplimiento_Apertura %}incumplimiento{% elif row.No_Registrado_Apertura %}no-registrado{% endif %}">
+                                            {{ row.Apertura }}
+                                        </td>
+                                        <td>{{ row.Hora_Limite_Apertura }}</td>
+                                        <td
+                                            class="{% if row.Incumplimiento_Cierre %}incumplimiento{% elif row.No_Registrado_Cierre %}no-registrado{% endif %}">
+                                            {{ row.Cierre }}
+                                        </td>
+                                        <td>{{ row.Hora_Limite_Cierre }}</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                {% if row.Incumplimiento_Apertura %}
+                                                <button class="btn-exception btn-exception-apertura"
+                                                    onclick="toggleExcepcion(this, '{{ row['N° de Local'] }}', '{{ row.Fecha }}', 'apertura')">
+                                                    Excepción Apertura
+                                                </button>
+                                                {% endif %}
+                                                {% if row.Incumplimiento_Cierre %}
+                                                <button class="btn-exception btn-exception-cierre"
+                                                    onclick="toggleExcepcion(this, '{{ row['N° de Local'] }}', '{{ row.Fecha }}', 'cierre')">
+                                                    Excepción Cierre
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Análisis con Excepciones -->
+            <div class="tab-pane fade" id="excepciones">
+                <!-- Gráficos con excepciones -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div id="incumplimientos-total-excepciones"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="incumplimientos-tipo-excepciones"></div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table" id="tabla-excepciones">
+                        <thead>
+                            <tr>
+                                <th>N° de Local</th>
+                                <th>Nombre</th>
+                                <th>Total Incumplimientos</th>
+                                <th>Incumplimientos Apertura</th>
+                                <th>Incumplimientos Cierre</th>
+                                <th>Excepciones Aplicadas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for local in resumen_excepciones %}
+                            <tr>
+                                <td>{{ local.numero }}</td>
+                                <td>{{ local.nombre }}</td>
+                                <td>{{ local.total }}</td>
+                                <td>{{ local.apertura }}</td>
+                                <td>{{ local.cierre }}</td>
+                                <td>{{ local.excepciones }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Gráficos normales
+            var data_total = JSON.parse({{ graficos.incumplimientos_total | tojson | safe }});
+        var data_tipo = JSON.parse({{ graficos.incumplimientos_tipo | tojson | safe }});
+
+        Plotly.newPlot('incumplimientos-total-chart', data_total.data, data_total.layout);
+        Plotly.newPlot('incumplimientos-tipo-chart', data_tipo.data, data_tipo.layout);
+
+        // Gráficos con excepciones
+        var data_total_exc = JSON.parse({{ graficos.incumplimientos_total_excepciones | tojson | safe }});
+        var data_tipo_exc = JSON.parse({{ graficos.incumplimientos_tipo_excepciones | tojson | safe }});
+
+        Plotly.newPlot('incumplimientos-total-excepciones', data_total_exc.data, data_total_exc.layout);
+        Plotly.newPlot('incumplimientos-tipo-excepciones', data_tipo_exc.data, data_tipo_exc.layout);
+    });
+
+        // Funciones para filtros
+        function aplicarFiltrosCompleto() {
+            const local = document.getElementById('filtro-local-completo').value;
+            const dia = document.getElementById('filtro-dia-completo').value;
+            const filas = document.getElementById('tabla-completa').getElementsByTagName('tr');
+
+            for (let fila of filas) {
+                if (fila.getElementsByTagName('td').length === 0) continue;
+
+                let mostrar = true;
+                if (local && fila.cells[0].textContent !== local) mostrar = false;
+                if (dia && fila.cells[2].textContent !== dia) mostrar = false;
+
+                fila.style.display = mostrar ? '' : 'none';
+            }
+        }
+
+        function aplicarFiltrosIncumplimientos() {
+            const local = document.getElementById('filtro-local-incumplimientos').value;
+            const dia = document.getElementById('filtro-dia-incumplimientos').value;
+            const tipo = document.getElementById('filtro-tipo-incumplimientos').value;
+            const filas = document.getElementById('tabla-incumplimientos').getElementsByTagName('tr');
+
+            for (let fila of filas) {
+                if (fila.getElementsByTagName('td').length === 0) continue;
+
+                let mostrar = true;
+                if (local && fila.cells[0].textContent !== local) mostrar = false;
+                if (dia && fila.cells[2].textContent !== dia) mostrar = false;
+                if (tipo) {
+                    const tieneIncumplimientoApertura = fila.cells[4].classList.contains('incumplimiento');
+                    const tieneIncumplimientoCierre = fila.cells[6].classList.contains('incumplimiento');
+                    if (tipo === 'apertura' && !tieneIncumplimientoApertura) mostrar = false;
+                    if (tipo === 'cierre' && !tieneIncumplimientoCierre) mostrar = false;
+                }
+
+                fila.style.display = mostrar ? '' : 'none';
+            }
+        }
+
+        // Función para toggle excepciones
+        function toggleExcepcion(button, local, fecha, tipo) {
+            const row = button.closest('tr');
+            const cell = row.querySelector(tipo === 'apertura' ? 'td:nth-child(5)' : 'td:nth-child(7)');
+
+            if (cell.classList.contains('exception-cell')) {
+                cell.classList.remove('exception-cell');
+                button.style.opacity = '1';
+            } else {
+                cell.classList.add('exception-cell');
+                button.style.opacity = '0.5';
+            }
+        }
+
+        // Función para aplicar excepciones
+        function aplicarTodasExcepciones() {
+            // Recolectar todas las excepciones marcadas
+            const excepciones = [];
+            const filas = document.querySelectorAll('#tabla-incumplimientos tbody tr');
+
+            filas.forEach(row => {
+                const local = row.getAttribute('data-local');
+                const fecha = row.getAttribute('data-fecha');
+
+                if (!local || !fecha) {
+                    console.log('Fila sin datos necesarios:', row);
+                    return;
+                }
+
+                const celdaApertura = row.querySelector('td:nth-child(5)');
+                const celdaCierre = row.querySelector('td:nth-child(7)');
+                const excepcionApertura = celdaApertura && celdaApertura.classList.contains('exception-cell');
+                const excepcionCierre = celdaCierre && celdaCierre.classList.contains('exception-cell');
+
+                // Solo agregar si hay al menos una excepción marcada
+                if (excepcionApertura || excepcionCierre) {
+                    excepciones.push({
+                        local: local,
+                        fecha: fecha,
+                        excepcion_apertura: excepcionApertura,
+                        excepcion_cierre: excepcionCierre
+                    });
+                }
+            });
+
+            // Verificar si hay excepciones para aplicar
+            if (excepciones.length === 0) {
+                alert('No hay excepciones marcadas para aplicar');
+                return;
+            }
+
+            // Mostrar indicador de carga
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.className = 'loading-overlay';
+            loadingOverlay.innerHTML = `
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Procesando excepciones...</span>
+                </div>
+                <div class="mt-2">Procesando excepciones...</div>
+            `;
+            document.body.appendChild(loadingOverlay);
+
+            // Enviar las excepciones al servidor
+            fetch('/agregar_excepcion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ excepciones: excepciones })
+            })
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || `Error del servidor: ${response.status}`);
+                }
+                return data;
+            })
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Actualizar los gráficos con los nuevos datos
+                if (data.graficos) {
+                    Plotly.newPlot('incumplimientos-total-excepciones',
+                        JSON.parse(data.graficos.incumplimientos_total_excepciones).data,
+                        JSON.parse(data.graficos.incumplimientos_total_excepciones).layout
+                    );
+                    Plotly.newPlot('incumplimientos-tipo-excepciones',
+                        JSON.parse(data.graficos.incumplimientos_tipo_excepciones).data,
+                        JSON.parse(data.graficos.incumplimientos_tipo_excepciones).layout
+                    );
+                }
+
+                // Actualizar la tabla y mostrar el botón de PDF
+                actualizarTablaExcepciones(data.resumen_excepciones);
+                document.getElementById('btnDescargarPDF').style.display = 'inline-block';
+                
+                alert('Excepciones aplicadas correctamente');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`Error al procesar las excepciones: ${error.message}`);
+            })
+            .finally(() => {
+                if (document.body.contains(loadingOverlay)) {
+                    document.body.removeChild(loadingOverlay);
+                }
+            });
+        }
+
+        // Función para actualizar la tabla de excepciones
+        function actualizarTablaExcepciones(datos) {
+            const tbody = document.querySelector('#tabla-excepciones tbody');
+            tbody.innerHTML = '';
+
+            datos.forEach(local => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${local.numero}</td>
+                    <td>${local.nombre}</td>
+                    <td>${local.total}</td>
+                    <td>${local.apertura}</td>
+                    <td>${local.cierre}</td>
+                    <td>${local.excepciones}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Inicializar filtros
+        function inicializarFiltros() {
+            // Inicializar filtros tabla completa
+            const localesCompleto = new Set();
+            const diasCompleto = new Set();
+            document.querySelectorAll('#tabla-completa tbody tr').forEach(row => {
+                localesCompleto.add(row.cells[0].textContent);
+                diasCompleto.add(row.cells[2].textContent);
+            });
+
+            const filtroLocalCompleto = document.getElementById('filtro-local-completo');
+            const filtroDiaCompleto = document.getElementById('filtro-dia-completo');
+
+            localesCompleto.forEach(local => {
+                filtroLocalCompleto.add(new Option(local, local));
+            });
+            diasCompleto.forEach(dia => {
+                filtroDiaCompleto.add(new Option(dia, dia));
+            });
+
+            // Inicializar filtros tabla incumplimientos
+            const localesIncumplimientos = new Set();
+            const diasIncumplimientos = new Set();
+            document.querySelectorAll('#tabla-incumplimientos tbody tr').forEach(row => {
+                localesIncumplimientos.add(row.cells[0].textContent);
+                diasIncumplimientos.add(row.cells[2].textContent);
+            });
+
+            const filtroLocalIncumplimientos = document.getElementById('filtro-local-incumplimientos');
+            const filtroDiaIncumplimientos = document.getElementById('filtro-dia-incumplimientos');
+
+            localesIncumplimientos.forEach(local => {
+                filtroLocalIncumplimientos.add(new Option(local, local));
+            });
+            diasIncumplimientos.forEach(dia => {
+                filtroDiaIncumplimientos.add(new Option(dia, dia));
+            });
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            inicializarFiltros();
+
+            // Event listeners para filtros tabla completa
+            document.getElementById('filtro-local-completo').addEventListener('change', aplicarFiltrosCompleto);
+            document.getElementById('filtro-dia-completo').addEventListener('change', aplicarFiltrosCompleto);
+
+            // Event listeners para filtros tabla incumplimientos
+            document.getElementById('filtro-local-incumplimientos').addEventListener('change', aplicarFiltrosIncumplimientos);
+            document.getElementById('filtro-dia-incumplimientos').addEventListener('change', aplicarFiltrosIncumplimientos);
+            document.getElementById('filtro-tipo-incumplimientos').addEventListener('change', aplicarFiltrosIncumplimientos);
+
+            // Inicializar los tabs de Bootstrap
+            const triggerTabList = [].slice.call(document.querySelectorAll('#myTab button'))
+            triggerTabList.forEach(function (triggerEl) {
+                new bootstrap.Tab(triggerEl)
+            })
+        });
+
+        // Función para descargar el PDF
+        function downloadPDF() {
+            try {
+                // Obtener la fecha actual
+                const hoy = new Date();
+                const dia = String(hoy.getDate()).padStart(2, '0');
+                const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+                const anio = hoy.getFullYear();
+                const fechaFormateada = `${dia}-${mes}-${anio}`;
+
+                // Activar el tab de excepciones y esperar a que las gráficas se muestren
+                const excepcionesTab = document.getElementById('excepciones-tab');
+                excepcionesTab.click();
+
+                // Esperar a que las gráficas se renderizen
+                setTimeout(async function () {
+                    try {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF();
+
+                        // Agregar título
+                        doc.setFontSize(16);
+                        doc.text('Reporte de Excepciones', 105, 15, { align: 'center' });
+                        doc.setFontSize(12);
+                        doc.text(`Fecha: ${fechaFormateada}`, 105, 25, { align: 'center' });
+
+                        // Obtener las gráficas usando Plotly
+                        const grafica1Promise = Plotly.toImage('incumplimientos-total-excepciones', {
+                            format: 'png',
+                            width: 800,
+                            height: 400,
+                            scale: 2
+                        });
+
+                        const grafica2Promise = Plotly.toImage('incumplimientos-tipo-excepciones', {
+                            format: 'png',
+                            width: 800,
+                            height: 400,
+                            scale: 2
+                        });
+
+                        // Esperar a que ambas gráficas se conviertan a imágenes
+                        const [img1, img2] = await Promise.all([grafica1Promise, grafica2Promise]);
+
+                        // Agregar las imágenes al PDF
+                        doc.addImage(img1, 'PNG', 10, 35, 190, 80);
+                        doc.addImage(img2, 'PNG', 10, 125, 190, 80);
+
+                        // Nueva página para la tabla
+                        doc.addPage();
+
+                        // Agregar la tabla
+                        const tabla = document.getElementById('tabla-excepciones');
+                        if (!tabla) {
+                            throw new Error('No se encontró la tabla de excepciones');
+                        }
+
+                        doc.autoTable({
+                            html: tabla,
+                            startY: 20,
+                            headStyles: { fillColor: [41, 128, 185] },
+                            theme: 'grid',
+                            margin: { top: 20 },
+                            styles: {
+                                fontSize: 10,
+                                cellPadding: 3
+                            }
+                        });
+
+                        // Descargar el PDF
+                        const nombreArchivo = `reporte_excepciones_${fechaFormateada}.pdf`;
+                        doc.save(nombreArchivo);
+
+                    } catch (error) {
+                        console.error('Error específico:', error);
+                        alert('Error al generar el PDF: ' + error.message);
+                    }
+                }, 1000); // Esperar 1 segundo para que las gráficas se rendericen
+
+            } catch (error) {
+                console.error('Error general:', error);
+                alert('Error al iniciar la generación del PDF: ' + error.message);
+            }
+        }
+
+        // Agregar el botón cuando el documento esté cargado
+        document.addEventListener('DOMContentLoaded', function () {
+            const contenedorTabla = document.querySelector('#excepciones .table-responsive');
+            if (contenedorTabla) {
+                const boton = document.createElement('button');
+                boton.innerHTML = 'Descargar Reporte PDF';
+                boton.className = 'btn btn-primary mt-3';
+                boton.onclick = downloadPDF;
+                contenedorTabla.insertAdjacentElement('afterend', boton);
+            }
+        });
+
+        function downloadExcelCompleto() {
+            // Mostrar indicador de carga
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.className = 'loading-overlay';
+            loadingOverlay.innerHTML = `
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Generando Excel...</span>
+        </div>
+        <div class="mt-2">Generando Excel...</div>
+    `;
+            document.body.appendChild(loadingOverlay);
+
+            // Obtener todos los datos de la tabla
+            const tabla = document.getElementById('tabla-completa');
+            const filas = Array.from(tabla.querySelectorAll('tbody tr'));
+
+            // Ordenar filas: primero por local, luego excepciones al final
+            filas.sort((a, b) => {
+                const localA = a.cells[0].textContent;
+                const localB = b.cells[0].textContent;
+                const esExcepcionA = a.querySelector('.exception-cell') !== null;
+                const esExcepcionB = b.querySelector('.exception-cell') !== null;
+
+                if (esExcepcionA !== esExcepcionB) {
+                    return esExcepcionA ? 1 : -1; // Excepciones al final
+                }
+                return localA.localeCompare(localB);
+            });
+
+            // Preparar datos para Excel
+            const datos = {
+                encabezados: Array.from(tabla.querySelectorAll('thead th')).map(th => th.textContent),
+                filas: filas.map(fila => {
+                    const celdas = Array.from(fila.cells);
+                    return {
+                        datos: celdas.map(celda => celda.textContent),
+                        estilos: celdas.map(celda => {
+                            if (celda.classList.contains('incumplimiento')) return 'incumplimiento';
+                            if (celda.classList.contains('exception-cell')) return 'excepcion';
+                            if (celda.classList.contains('no-registrado')) return 'no-registrado';
+                            return 'normal';
+                        })
+                    };
+                })
+            };
+
+            // Enviar al servidor para generar Excel
+            fetch('/generar_excel_completo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(datos)
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    // Crear y hacer clic en el enlace de descarga
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    const fecha = new Date().toISOString().split('T')[0];
+                    a.href = url;
+                    a.download = `reporte_completo_${fecha}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al generar el Excel: ' + error.message);
+                })
+                .finally(() => {
+                    if (document.body.contains(loadingOverlay)) {
+                        document.body.removeChild(loadingOverlay);
+                    }
+                });
+        }
+
+        function downloadTablaIncumplimientos() {
+            // Obtener la tabla
+            const tabla = document.getElementById('tabla-excepciones');
+            if (!tabla) {
+                alert('No se encontró la tabla de incumplimientos');
+                return;
+            }
+
+            // Crear el contenido CSV
+            let csv = [];
+            
+            // Obtener encabezados
+            const headers = Array.from(tabla.querySelectorAll('th'))
+                .map(th => `"${th.textContent.trim()}"`);
+            csv.push(headers.join(','));
+            
+            // Obtener filas
+            const filas = tabla.querySelectorAll('tbody tr');
+            filas.forEach(fila => {
+                const valores = Array.from(fila.querySelectorAll('td'))
+                    .map(td => `"${td.textContent.trim()}"`);
+                csv.push(valores.join(','));
+            });
+
+            // Crear el blob y descargar
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const fecha = new Date().toISOString().split('T')[0];
+            
+            link.href = URL.createObjectURL(blob);
+            link.download = `incumplimientos_${fecha}.csv`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Asegurarse de que los botones solo aparezcan en la pestaña de excepciones
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabExcepciones = document.querySelector('a[href="#excepciones"]');
+            if (tabExcepciones) {
+                tabExcepciones.addEventListener('shown.bs.tab', function() {
+                    document.querySelector('.download-buttons').style.display = 'block';
+                });
+                
+                // Ocultar botones cuando se cambie a otra pestaña
+                const otherTabs = document.querySelectorAll('a[data-bs-toggle="tab"]:not([href="#excepciones"])');
+                otherTabs.forEach(tab => {
+                    tab.addEventListener('shown.bs.tab', function() {
+                        document.querySelector('.download-buttons').style.display = 'none';
+                    });
+                });
+            }
+        });
+
+        function descargarTablaPDF() {
+            console.log("Iniciando descarga de PDF...");
+            const tabla = document.querySelector('#tabla-incumplimientos');
+            if (!tabla) {
+                console.error("No se encontró la tabla");
+                alert("Error: No se encontró la tabla de incumplimientos");
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('l', 'mm', 'a4');
+
+                // Título y fecha
+                doc.setFont("helvetica");
+                doc.setFontSize(16);
+                doc.text("Reporte de Incumplimientos", 15, 15);
+                doc.setFontSize(12);
+                doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 15, 25);
+
+                // Obtener los datos directamente de la tabla, excluyendo la última columna
+                const headers = ['N° de Local', 'Nombre', 'Día', 'Fecha', 'Apertura', 'Hora Límite Apertura', 'Cierre', 'Hora Límite Cierre'];
+                
+                // Obtener filas y procesar sus datos con colores
+                const filas = Array.from(tabla.querySelectorAll('tbody tr:not([style*="display: none"])'));
+                const datos = filas.map(fila => {
+                    return Array.from(fila.querySelectorAll('td'))
+                        .slice(0, -1) // Excluir la última columna
+                        .map(celda => ({
+                            texto: celda.textContent.trim(),
+                            esExcepcion: celda.classList.contains('exception-cell'),
+                            esIncumplimiento: celda.classList.contains('incumplimiento'),
+                            esNoRegistrado: celda.textContent.includes('No registrado')
+                        }));
+                });
+
+                // Configurar tabla
+                doc.autoTable({
+                    head: [headers],
+                    body: datos.map(fila => fila.map(celda => celda.texto)),
+                    startY: 30,
+                    styles: {
+                        fontSize: 8,
+                        cellPadding: 2
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 25 },  // N° Local
+                        1: { cellWidth: 45 },  // Nombre
+                        2: { cellWidth: 25 },  // Día
+                        3: { cellWidth: 25 },  // Fecha
+                        4: { cellWidth: 25 },  // Apertura
+                        5: { cellWidth: 30 },  // Límite Apertura
+                        6: { cellWidth: 25 },  // Cierre
+                        7: { cellWidth: 30 }   // Límite Cierre
+                    },
+                    headStyles: {
+                        fillColor: [86, 76, 175],
+                        textColor: [255, 255, 255]
+                    },
+                    didParseCell: function(data) {
+                        if (data.section === 'body') {
+                            const celda = datos[data.row.index][data.column.index];
+                            if (celda.esExcepcion) {
+                                data.cell.styles.textColor = [0, 128, 0]; // Verde para excepciones
+                            } else if (celda.esIncumplimiento) {
+                                data.cell.styles.textColor = [255, 0, 0]; // Rojo para incumplimientos
+                            } else if (celda.esNoRegistrado) {
+                                data.cell.styles.textColor = [0, 0, 255]; // Azul para no registrados
+                            } else {
+                                data.cell.styles.textColor = [0, 0, 0]; // Negro para el resto
+                            }
+                        }
+                    }
+                });
+
+                // Guardar PDF
+                const fechaArchivo = new Date().toISOString().split('T')[0];
+                doc.save(`reporte_incumplimientos_${fechaArchivo}.pdf`);
+                console.log("PDF generado exitosamente");
+            } catch (error) {
+                console.error("Error al generar PDF:", error);
+                alert("Error al generar el PDF: " + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

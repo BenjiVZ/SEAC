@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Proceso Completo - Paso 2</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .calendar-day {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+
+        .calendar-day.selected {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .calendar-header {
+            font-weight: bold;
+            background-color: #f8f9fa;
+            padding: 5px;
+        }
+
+        :root {
+            --primary-color: #564caf;
+            --secondary-color: #4a41a3;
+            --accent-color: #ff6b6b;
+            --text-color: #333;
+            --background-color: #f0f0f0;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            padding: 20px 0;
+            box-shadow: var(--box-shadow);
+        }
+
+        header .logo {
+            max-width: 150px;
+            display: block;
+            margin: 0 auto 20px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="{{ url_for('index') }}" class="logo">
+                <!-- <img src="{{ url_for('static', filename='images/LOGO_SEAC-removebg.png') }}" alt="Logo SEAC"> -->
+            </a>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Inicio</a></li>
+                <li><a href="{{ url_for('upload') }}">Configurar Horarios</a></li>
+                <li><a href="#" class="active">Procesar Archivos</a></li>
+            </ul>
+        </nav>
+    </header><br>
+    <main>
+        <div class="container">
+            <h1>Paso 2: Configurar Mes y Feriados</h1>
+
+            {% if error %}
+            <div class="error-message">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST" id="feriados-form">
+                <input type="hidden" name="step" value="2">
+
+                <div class="form-group">
+                    <label for="month">Seleccionar Mes:</label>
+                    <input type="month" id="month" name="month" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Seleccionar Días Feriados:</label>
+                    <div id="calendar-container" class="calendar-grid"></div>
+                    <input type="hidden" name="feriados" id="feriados">
+                </div>
+
+                <button type="submit" class="btn-primary">Continuar</button>
+            </form>
+        </div>
+
+        <div id="loading" class="loading-overlay" style="display: none;">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>Procesando información...</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const monthInput = document.getElementById('month');
+        const calendarContainer = document.getElementById('calendar-container');
+        const feriadosInput = document.getElementById('feriados');
+        const selectedDays = new Set();
+
+        monthInput.addEventListener('change', updateCalendar);
+
+        function updateCalendar() {
+            const [year, month] = monthInput.value.split('-');
+            const firstDay = new Date(year, month - 1, 1);
+            const lastDay = new Date(year, month, 0);
+
+            calendarContainer.innerHTML = '';
+
+            // Agregar encabezados
+            ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-header';
+                header.textContent = day;
+                calendarContainer.appendChild(header);
+            });
+
+            // Agregar días vacíos hasta el primer día del mes
+            for (let i = 0; i < firstDay.getDay(); i++) {
+                calendarContainer.appendChild(document.createElement('div'));
+            }
+
+            // Agregar los días del mes
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+
+                const dateStr = `${year}-${month.padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                dayElement.addEventListener('click', () => {
+                    dayElement.classList.toggle('selected');
+                    if (selectedDays.has(dateStr)) {
+                        selectedDays.delete(dateStr);
+                    } else {
+                        selectedDays.add(dateStr);
+                    }
+                    feriadosInput.value = Array.from(selectedDays).join(',');
+                });
+
+                calendarContainer.appendChild(dayElement);
+            }
+        }
+
+        document.getElementById('feriados-form').addEventListener('submit', function () {
+            document.getElementById('loading').style.display = 'flex';
+        });
+    </script>
+</body>
+
+</html>

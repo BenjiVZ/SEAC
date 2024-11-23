@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Proceso Completo - Paso 1</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        :root {
+            --primary-color: #564caf;
+            --secondary-color: #4a41a3;
+            --accent-color: #ff6b6b;
+            --text-color: #333;
+            --background-color: #f0f0f0;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            padding: 20px 0;
+            box-shadow: var(--box-shadow);
+        }
+
+        header .logo {
+            max-width: 150px;
+            display: block;
+            margin: 0 auto 20px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: var(--accent-color);
+        }
+
+        #messages-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .message {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="{{ url_for('index') }}" class="logo">
+                <!-- <img src="{{ url_for('static', filename='images/LOGO_SEAC-removebg.png') }}" alt="Logo SEAC"> -->
+            </a>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Inicio</a></li>
+                <li><a href="{{ url_for('upload') }}">Configurar Horarios</a></li>
+                <li><a href="#" class="active">Procesar Archivos</a></li>
+            </ul>
+        </nav>
+    </header><br>
+    <div id="messages-container"></div>
+    <main>
+        <div class="container">
+            <h1>Paso 1: Subir Archivo Excel</h1>
+
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="step" value="1">
+
+            <div class="form-group">
+                <label for="file">Seleccionar archivo Excel:</label>
+                <input type="file" id="file" name="file" accept=".xlsx" required>
+            </div>
+
+            <div class="form-group">
+                <label for="sheet_name">Nombre de la hoja:</label>
+                <input type="text" id="sheet_name" name="sheet_name" required>
+            </div>
+
+            <button type="submit" class="btn-primary">Procesar y Continuar</button>
+        </form>
+    </div>
+
+    <div id="loading" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loading-message">Procesando archivo...</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', function () {
+            document.getElementById('loading').style.display = 'flex';
+        });
+
+        function showMessage(message, type = 'success') {
+            const container = document.getElementById('messages-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${type}`;
+            messageDiv.textContent = message;
+            container.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.style.animation = 'slideOut 0.3s ease-in forwards';
+                setTimeout(() => messageDiv.remove(), 300);
+            }, 5000);
+        }
+
+        {% if messages %}
+            {% for message in messages %}
+                showMessage("{{ message }}", "success");
+            {% endfor %}
+        {% endif %}
+
+        {% if error %}
+            showMessage("{{ error }}", "error");
+        {% endif %}
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Diagnóstico Excel Server</title>
+    <style>
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Diagnóstico de Excel en el Servidor</h1>
+    <ul>
+    {% for message in messages %}
+        <li class="{{ 'success' if '✓' in message else 'error' if '✗' in message else 'info' }}">
+            {{ message }}
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html> 

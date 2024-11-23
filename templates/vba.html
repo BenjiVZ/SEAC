@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procesar archivo Excel - SEAC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='vba-styles.css') }}">
+    <script src="{{ url_for('static', filename='brutal-script.js') }}" defer></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .calendar-day {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            background-color: white;
+        }
+
+        .calendar-day:hover {
+            background-color: #f0f0f0;
+        }
+
+        .calendar-day.selected {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .calendar-header {
+            font-weight: bold;
+            background-color: #f8f9fa;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .calendar-day.disabled {
+            background-color: #f8f9fa;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="{{ url_for('index') }}" class="logo">
+                <img src="{{ url_for('static', filename='images/LOGO_SEAC-removebg.png') }}" alt="Logo SEAC">
+            </a>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Inicio</a></li>
+                <li><a href="{{ url_for('upload') }}">Configurar Horarios</a></li>
+                <li><a href="#" class="active">Procesar Archivos</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1>Procesamiento de Archivos Excel</h1>
+
+        <section class="card">
+            <h2>Subir archivo Excel para procesamiento</h2>
+            <form method="post" enctype="multipart/form-data" action="/procesar_vba" class="form-grid">
+                <div class="form-group">
+                    <label for="file">Archivo Excel:</label>
+                    <input type="file" name="file" id="file" accept=".xlsx" required>
+                </div>
+                <div class="form-group">
+                    <label for="sheet_name">Nombre de la hoja de trabajo:</label>
+                    <input type="text" name="sheet_name" id="sheet_name" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Procesar archivo</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Subir archivo procesado para limpieza con pandas</h2>
+            <form action="/procesar_pandas" method="POST" enctype="multipart/form-data" class="form-grid">
+                <div class="form-group">
+                    <label for="file_pandas">Archivo Excel:</label>
+                    <input type="file" name="file" id="file_pandas" accept=".xlsx" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Procesar con pandas</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Subir archivo para limpieza adicional</h2>
+            <form action="/limpiar_datos_adicionales" method="POST" enctype="multipart/form-data" class="form-grid">
+                <div class="form-group">
+                    <label for="file_limpieza">Archivo Excel:</label>
+                    <input type="file" name="file" id="file_limpieza" accept=".xlsx" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Limpiar datos adicionales</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Convertir Excel a CSV</h2>
+            <form action="/convertir_xlsx_a_csv" method="POST" enctype="multipart/form-data" class="form-grid">
+                <div class="form-group">
+                    <label for="file_csv">Archivo Excel:</label>
+                    <input type="file" name="file" id="file_csv" accept=".xlsx" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Convertir y Descargar CSV</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Tabular por días de la semana</h2>
+            <form action="/tabular_por_dias" method="POST" enctype="multipart/form-data" class="form-grid">
+                <div class="form-group">
+                    <label for="file_tabular">Seleccionar archivo:</label>
+                    <input type="file" id="file_tabular" name="file" accept=".csv,.xlsx" required>
+                </div>
+                <div class="form-group">
+                    <label for="month-picker">Seleccionar mes y año:</label>
+                    <input type="month" id="month-picker" name="month" required>
+                </div>
+                <div class="form-group">
+                    <label>Seleccionar días feriados:</label>
+                    <div id="calendar-container" class="calendar-grid"></div>
+                    <input type="hidden" id="feriados" name="feriados">
+                </div>
+                <button type="submit" class="btn btn-primary">Tabular</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Configurar tiendas gourmet</h2>
+            <form action="/configurar_gourmet" method="POST" enctype="multipart/form-data" id="gourmetForm"
+                class="form-grid">
+                <div class="form-group">
+                    <label for="file_gourmet">Seleccionar archivo:</label>
+                    <input type="file" id="file_gourmet" name="file" accept=".csv,.xlsx" required
+                        onchange="cargarTiendas(this)">
+                </div>
+                <div id="tiendas-container" class="hidden">
+                    <h3>Seleccionar tiendas gourmet:</h3>
+                    <div id="tiendas-list" class="tiendas-list"></div>
+                    <button type="submit" class="btn btn-primary">Procesar tiendas gourmet</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 SEAC. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const monthPicker = document.getElementById('month-picker');
+            const calendarContainer = document.getElementById('calendar-container');
+            const feriadosInput = document.getElementById('feriados');
+            const selectedDays = new Set();
+
+            const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+            function updateCalendar() {
+                const [year, month] = monthPicker.value.split('-');
+                const firstDay = new Date(year, month - 1, 1);
+                const lastDay = new Date(year, month, 0);
+                const totalDays = lastDay.getDate();
+
+                // Limpiar el calendario
+                calendarContainer.innerHTML = '';
+
+                // Agregar encabezados de días de la semana
+                diasSemana.forEach(dia => {
+                    const header = document.createElement('div');
+                    header.className = 'calendar-header';
+                    header.textContent = dia;
+                    calendarContainer.appendChild(header);
+                });
+
+                // Agregar espacios en blanco para el primer día
+                for (let i = 0; i < firstDay.getDay(); i++) {
+                    const emptyDay = document.createElement('div');
+                    emptyDay.className = 'calendar-day disabled';
+                    calendarContainer.appendChild(emptyDay);
+                }
+
+                // Agregar los días del mes
+                for (let day = 1; day <= totalDays; day++) {
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'calendar-day';
+                    dayElement.textContent = day;
+
+                    const dateStr = `${year}-${month.padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    if (selectedDays.has(dateStr)) {
+                        dayElement.classList.add('selected');
+                    }
+
+                    dayElement.addEventListener('click', () => {
+                        if (selectedDays.has(dateStr)) {
+                            selectedDays.delete(dateStr);
+                            dayElement.classList.remove('selected');
+                        } else {
+                            selectedDays.add(dateStr);
+                            dayElement.classList.add('selected');
+                        }
+                        feriadosInput.value = Array.from(selectedDays).join(',');
+                    });
+
+                    calendarContainer.appendChild(dayElement);
+                }
+            }
+
+            monthPicker.addEventListener('change', () => {
+                selectedDays.clear();
+                feriadosInput.value = '';
+                updateCalendar();
+            });
+        });
+
+        async function cargarTiendas(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/obtener_tiendas', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Error al cargar tiendas');
+
+                const tiendas = await response.json();
+                const container = document.getElementById('tiendas-list');
+                container.innerHTML = '';
+
+                tiendas.forEach(tienda => {
+                    const div = document.createElement('div');
+                    div.className = 'tienda-item';
+                    div.innerHTML = `
+                        <label>
+                            <input type="checkbox" name="tiendas_gourmet" value="${tienda}">
+                            ${tienda}
+                        </label>
+                    `;
+                    container.appendChild(div);
+                });
+
+                document.getElementById('tiendas-container').classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al cargar las tiendas');
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados del Análisis - SEAC</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.15/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #564caf;
+            --secondary-color: #4a41a3;
+            --accent-color: #ff6b6b;
+            --text-color: #333;
+            --background-color: #f0f0f0;
+            --card-background: #ffffff;
+            --border-radius: 16px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --download-color: #149b3d;
+            --download-color-hover: #10752b;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1400px;
+            padding: 2rem;
+        }
+
+        .content-wrapper {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .charts-section, .table-section {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .charts-section {
+            margin-right: 2rem;
+        }
+
+        h1, h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .download-button {
+            margin: 10px 5px;
+            padding: 10px 20px;
+            background-color: var(--download-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-button:hover {
+            background-color: var(--download-color-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .chart-wrapper {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            background: white;
+            margin-bottom: 2rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            max-height: 800px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+        }
+
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .celda-roja {
+            background-color: #ffcccc !important;
+            color: red !important;
+            font-weight: 500;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .nav-button {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+            color: var(--accent-color) !important;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="nav-button" style="color: white; text-decoration: none; font-weight: bold; opacity: 0.9;">
+            Volver al Inicio
+        </a>
+    </header>
+    <div class="container">
+        <h1 class="text-center mb-4">Resultados del Análisis</h1>
+        
+        <div class="buttons-container text-center mb-4">
+            <button onclick="downloadPlotlyPDF()" class="download-button">
+                Descargar Gráfica PDF
+            </button>
+            <button onclick="downloadTablePDF()" class="download-button">
+                Descargar Tabla PDF
+            </button>
+        </div>
+
+        <div class="content-wrapper">
+            <div class="charts-section">
+                <h2>Gráficas</h2>
+                {% for i in range(chart_data|length) %}
+                    <div class="chart-wrapper">
+                        <div class="chart-controls mb-2">
+                            <button onclick="zoomGrafica({{i}}, 1.2)" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-search-plus"></i> Zoom In
+                            </button>
+                            <button onclick="zoomGrafica({{i}}, 0.8)" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-search-minus"></i> Zoom Out
+                            </button>
+                        </div>
+                        <div id="plotly-chart-{{i}}" style="height: 400px;"></div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="table-section">
+                <h2>Tabla de Resultados</h2>
+                <div class="table-responsive">
+                    {{ table_html|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Renderizar múltiples gráficas
+        {% for i in range(chart_data|length) %}
+            const plotlyData{{i}} = {{ chart_data[i]|safe }};
+            Plotly.newPlot('plotly-chart-{{i}}', plotlyData{{i}}.data, plotlyData{{i}}.layout);
+        {% endfor %}
+
+        // PDF de gráficas en A4
+        async function downloadPlotlyPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');  // A4 landscape
+            
+            try {
+                const graficasPorPagina = 2;
+                let yPos = 20;
+                let graficasEnPaginaActual = 0;
+                
+                // Agregar título en la primera página
+                doc.setFontSize(14);
+                doc.text('Gráficas de Resultados', 20, yPos);
+                yPos += 15;
+
+                // Procesar cada gráfica
+                for(let i = 0; i < {{chart_data|length}}; i++) {
+                    if (graficasEnPaginaActual >= graficasPorPagina) {
+                        doc.addPage();
+                        yPos = 20;
+                        graficasEnPaginaActual = 0;
+                    }
+
+                    const plotlyImage = await Plotly.toImage(`plotly-chart-${i}`, {
+                        format: 'png',
+                        width: 600,
+                        height: 300,
+                        scale: 1.5
+                    });
+
+                    // Ajustar posición Y según la gráfica actual
+                    const currentYPos = yPos + (graficasEnPaginaActual * 90);  // 90mm de espacio por gráfica
+                    doc.addImage(plotlyImage, 'PNG', 20, currentYPos, 250, 80);
+                    
+                    graficasEnPaginaActual++;
+                }
+
+                doc.save('graficas_resultados.pdf');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al generar el PDF');
+            }
+        }
+
+        // PDF de tabla en A0
+        function downloadTablePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a0'
+            });
+
+            const tableConfig = {
+                html: 'table',
+                startY: 15,
+                styles: {
+                    fontSize: 3,
+                    cellPadding: 0.3,
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.1,
+                    minCellHeight: 3,
+                    cellWidth: 'wrap',
+                    halign: 'left'
+                },
+                headStyles: {
+                    fillColor: [200, 200, 200],
+                    textColor: [0, 0, 0],
+                    fontSize: 3.2,
+                    fontStyle: 'bold'
+                },
+                tableWidth: 'auto',
+                margin: {
+                    top: 10,
+                    right: 5,
+                    bottom: 5,
+                    left: 5
+                },
+                columnStyles: {
+                    0: {cellWidth: 8},
+                    1: {cellWidth: 12},
+                    2: {cellWidth: 15},
+                    3: {cellWidth: 12},
+                    _: {cellWidth: 10}
+                },
+                didDrawCell: function(data) {
+                    if (data.cell.text.join(' ').includes('roja')) {
+                        doc.setFillColor(255, 204, 204);
+                        doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                        doc.setTextColor(255, 0, 0);
+                    } else {
+                        doc.setTextColor(0);
+                    }
+                },
+                didDrawPage: function(data) {
+                    doc.setFontSize(8);
+                    doc.text('Reporte de Celdas Rojas', 10, 8);
+                    
+                    const fecha = new Date().toLocaleDateString();
+                    doc.setFontSize(5);
+                    doc.text(`Fecha: ${fecha}`, doc.internal.pageSize.width - 35, 8);
+                }
+            };
+
+            try {
+                doc.autoTable(tableConfig);
+                doc.save('tabla_resultados.pdf');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al generar el PDF');
+            }
+        }
+
+        // Función para aplicar filtros
+        function sambil_aplicarFiltros() {
+            const local = document.getElementById('localFilter').value;
+            const fecha = document.getElementById('dateFilter').value;
+            
+            // Aquí puedes implementar la lógica de filtrado
+            console.log('Filtrar por:', { local, fecha });
+        }
+
+        // Inicializar filtros
+        document.addEventListener('DOMContentLoaded', function() {
+            // Poblar select de locales
+            const locales = [...new Set(Array.from(document.querySelectorAll('td:nth-child(3)')).map(td => td.textContent))];
+            const select = document.getElementById('localFilter');
+            locales.forEach(local => {
+                const option = document.createElement('option');
+                option.value = local;
+                option.textContent = local;
+                select.appendChild(option);
+            });
+        });
+
+        // Función de zoom actualizada
+        function zoomGrafica(chartIndex, factor) {
+            const plotlyData = window[`plotlyData${chartIndex}`];
+            const layout = {...plotlyData.layout};
+            layout.height = layout.height * factor;
+            Plotly.newPlot(`plotly-chart-${chartIndex}`, plotlyData.data, layout);
+        }
+    </script>
+</body>
+</html>
